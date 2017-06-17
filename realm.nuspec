@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <!-- Required elements-->
+        <id>Naxam.Realm.iOS</id>
+        <version>2.8.1-pre</version>
+        <description>Xamarin Binding Library - Realm iOS</description>
+        <authors>Vu Duc Tuyen</authors>
+        <owners>NAXAM CO.,LTD</owners>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <title>Naxam - Realm iOS</title>
+        <releaseNotes>Realm 2.8.1</releaseNotes>
+        <summary>Xamarin Binding Library - Realm</summary>
+        <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+        <projectUrl>https://github.com/NAXAM/realm-ios-binding</projectUrl>
+        <copyright>Copyright (c) 2017 NAXAM</copyright>
+        <tags>Xamarin.iOS, realm</tags>
+    </metadata>
+    <!-- Optional 'files' node -->
+    <files>
+        <file src="Naxam.Realm.iOS/bin/Release/Naxam.Realm.iOS.dll" target="lib/Xamarin.iOS10/Naxam.Realm.iOS.dll" />
+    </files>
+</package>

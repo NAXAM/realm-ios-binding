@@ -64,6 +64,8 @@ namespace NxRealm
 	public enum RLMSyncError : long
 	{
 		BadResponse = 1,
+        BadRemoteRealmPath      = 2,
+        HTTPStatusCodeError     = 3,
 		ClientSessionError = 4,
 		ClientUserError = 5,
 		ClientInternalError = 6,
@@ -74,20 +76,9 @@ namespace NxRealm
 	[Native]
 	public enum RLMSyncAuthError : long
 	{
-		BadResponse = 1,
-		BadRemoteRealmPath = 2,
-		HTTPStatusCodeError = 3,
-		ClientSessionError = 4,
 		InvalidCredential = 611,
 		UserDoesNotExist = 612,
 		UserAlreadyExists = 613
-	}
-
-	[Native]
-	public enum RLMSyncPermissionError : long
-	{
-		ChangeFailed = 1,
-		GetFailed = 2
 	}
 
 	[Native]

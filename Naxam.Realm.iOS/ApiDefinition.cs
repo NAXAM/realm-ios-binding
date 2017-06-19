@@ -1231,10 +1231,6 @@ namespace NxRealm
 		[Export ("realmURL")]
 		NSUrl RealmURL { get; }
 
-		// @property (nonatomic) BOOL enableSSLValidation;
-		[Export ("enableSSLValidation")]
-		bool EnableSSLValidation { get; set; }
-
 		// -(instancetype _Nonnull)initWithUser:(RLMSyncUser * _Nonnull)user realmURL:(NSURL * _Nonnull)url;
 		[Export ("initWithUser:realmURL:")]
 		IntPtr Constructor (RLMSyncUser user, NSUrl url);
@@ -1328,7 +1324,7 @@ namespace NxRealm
 		[Export ("appID")]
 		string AppID { get; set; }
 
-		// @property (nonatomic) BOOL disableSSLValidation __attribute__((deprecated("Set `enableSSLValidation` on individual configurations instead.")));
+		// @property (nonatomic) BOOL disableSSLValidation
 		[Export ("disableSSLValidation")]
 		bool DisableSSLValidation { get; set; }
 
@@ -1528,15 +1524,6 @@ namespace NxRealm
 	// typedef void (^RLMUserCompletionBlock)(RLMSyncUser * _Nullable, NSError * _Nullable);
 	delegate void RLMUserCompletionBlock ([NullAllowed] RLMSyncUser arg0, [NullAllowed] NSError arg1);
 
-	// typedef void (^RLMPasswordChangeStatusBlock)(NSError * _Nullable);
-	delegate void RLMPasswordChangeStatusBlock ([NullAllowed] NSError arg0);
-
-	// typedef void (^RLMPermissionStatusBlock)(NSError * _Nullable);
-	delegate void RLMPermissionStatusBlock ([NullAllowed] NSError arg0);
-
-	// typedef void (^RLMPermissionResultsBlock)(RLMSyncPermissionResults * _Nullable, NSError * _Nullable);
-	delegate void RLMPermissionResultsBlock ([NullAllowed] RLMSyncPermissionResults arg0, [NullAllowed] NSError arg1);
-
 	// @interface RLMSyncUser : NSObject
 	[BaseType (typeof(NSObject))]
 	[DisableDefaultCtor]
@@ -1591,26 +1578,6 @@ namespace NxRealm
 		[Export ("allSessions")]
 		RLMSyncSession[] AllSessions { get; }
 
-		// -(void)changePassword:(NSString * _Nonnull)newPassword completion:(RLMPasswordChangeStatusBlock _Nonnull)completion;
-		[Export ("changePassword:completion:")]
-		void ChangePassword (string newPassword, RLMPasswordChangeStatusBlock completion);
-
-		// -(void)changePassword:(NSString * _Nonnull)newPassword forUserID:(NSString * _Nonnull)userID completion:(RLMPasswordChangeStatusBlock _Nonnull)completion;
-		[Export ("changePassword:forUserID:completion:")]
-		void ChangePassword (string newPassword, string userID, RLMPasswordChangeStatusBlock completion);
-
-		// -(void)retrievePermissionsWithCallback:(RLMPermissionResultsBlock _Nonnull)callback;
-		[Export ("retrievePermissionsWithCallback:")]
-		void RetrievePermissionsWithCallback (RLMPermissionResultsBlock callback);
-
-		// -(void)applyPermission:(RLMSyncPermissionValue * _Nonnull)permission callback:(RLMPermissionStatusBlock _Nonnull)callback;
-		[Export ("applyPermission:callback:")]
-		void ApplyPermission (RLMSyncPermissionValue permission, RLMPermissionStatusBlock callback);
-
-		// -(void)revokePermission:(RLMSyncPermissionValue * _Nonnull)permission callback:(RLMPermissionStatusBlock _Nonnull)callback;
-		[Export ("revokePermission:callback:")]
-		void RevokePermission (RLMSyncPermissionValue permission, RLMPermissionStatusBlock callback);
-
 		// -(RLMRealm * _Nonnull)managementRealmWithError:(NSError * _Nullable * _Nullable)error;
 		[Export ("managementRealmWithError:")]
 		RLMRealm ManagementRealmWithError ([NullAllowed] out NSError error);
@@ -1618,82 +1585,6 @@ namespace NxRealm
 		// -(RLMRealm * _Nonnull)permissionRealmWithError:(NSError * _Nullable * _Nullable)error __attribute__((deprecated("Use `-retrievePermissionsWithCallback:`")));
 		[Export ("permissionRealmWithError:")]
 		RLMRealm PermissionRealmWithError ([NullAllowed] out NSError error);
-	}
-
-	// @interface RLMSyncPermissionResults : NSObject <NSFastEnumeration>
-	[BaseType (typeof(NSObject))]
-	[DisableDefaultCtor]
-	interface RLMSyncPermissionResults : NSFastEnumeration
-	{
-		// @property (readonly, nonatomic) NSInteger count;
-		[Export ("count")]
-		nint Count { get; }
-
-		// -(RLMSyncPermissionValue * _Nullable)firstObject;
-		[NullAllowed, Export ("firstObject")]
-		RLMSyncPermissionValue FirstObject { get; }
-
-		// -(RLMSyncPermissionValue * _Nullable)lastObject;
-		[NullAllowed, Export ("lastObject")]
-		RLMSyncPermissionValue LastObject { get; }
-
-		// -(RLMSyncPermissionValue * _Nonnull)objectAtIndex:(NSInteger)index;
-		[Export ("objectAtIndex:")]
-		RLMSyncPermissionValue ObjectAtIndex (nint index);
-
-		// -(NSInteger)indexOfObject:(RLMSyncPermissionValue * _Nonnull)object;
-		[Export ("indexOfObject:")]
-		nint IndexOfObject (RLMSyncPermissionValue @object);
-
-		// -(RLMNotificationToken * _Nonnull)addNotificationBlock:(RLMPermissionStatusBlock _Nonnull)block;
-		[Export ("addNotificationBlock:")]
-		RLMNotificationToken AddNotificationBlock (RLMPermissionStatusBlock block);
-
-		// -(RLMSyncPermissionResults * _Nonnull)objectsWithPredicate:(NSPredicate * _Nonnull)predicate;
-		[Export ("objectsWithPredicate:")]
-		RLMSyncPermissionResults ObjectsWithPredicate (NSPredicate predicate);
-
-		// -(RLMSyncPermissionResults * _Nonnull)sortedResultsUsingProperty:(RLMSyncPermissionResultsSortProperty)property ascending:(BOOL)ascending;
-		[Export ("sortedResultsUsingProperty:ascending:")]
-		RLMSyncPermissionResults SortedResultsUsingProperty (RLMSyncPermissionResultsSortProperty property, bool ascending);
-	}
-
-	// @interface RLMSyncPermissionValue : NSObject
-	[BaseType (typeof(NSObject))]
-	[DisableDefaultCtor]
-	interface RLMSyncPermissionValue
-	{
-		// @property (readonly, nonatomic) NSString * _Nonnull path;
-		[Export ("path")]
-		string Path { get; }
-
-		// @property (readonly, nonatomic) RLMSyncAccessLevel accessLevel;
-		[Export ("accessLevel")]
-		RLMSyncAccessLevel AccessLevel { get; }
-
-		// @property (readonly, nonatomic) BOOL mayRead;
-		[Export ("mayRead")]
-		bool MayRead { get; }
-
-		// @property (readonly, nonatomic) BOOL mayWrite;
-		[Export ("mayWrite")]
-		bool MayWrite { get; }
-
-		// @property (readonly, nonatomic) BOOL mayManage;
-		[Export ("mayManage")]
-		bool MayManage { get; }
-
-		// -(instancetype _Nonnull)initWithRealmPath:(NSString * _Nonnull)path userID:(NSString * _Nonnull)userID accessLevel:(RLMSyncAccessLevel)accessLevel;
-		[Export ("initWithRealmPath:userID:accessLevel:")]
-		IntPtr Constructor (string path, string userID, RLMSyncAccessLevel accessLevel);
-
-		// @property (readonly, nonatomic) NSString * _Nullable userId;
-		[NullAllowed, Export ("userId")]
-		string UserId { get; }
-
-		// @property (readonly, nonatomic) NSDate * _Nonnull updatedAt;
-		[Export ("updatedAt")]
-		NSDate UpdatedAt { get; }
 	}
 
 	// typedef void (^RLMProgressNotificationBlock)(NSUInteger, NSUInteger);

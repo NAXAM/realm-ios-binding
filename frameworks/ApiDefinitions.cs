@@ -446,19 +446,6 @@ namespace NxRealm
 		NSString RLMInvalidatedKey { get; }
 	}
 
-	// @interface RLMListBase : NSObject <NSFastEnumeration>
-	[BaseType (typeof(NSObject))]
-	interface RLMListBase : INSFastEnumeration
-	{
-		// @property (nonatomic, strong) RLMArray * _Nonnull _rlmArray;
-		[Export ("_rlmArray", ArgumentSemantic.Strong)]
-		RLMArray _rlmArray { get; set; }
-
-		// -(instancetype _Nonnull)initWithArray:(RLMArray * _Nonnull)array;
-		[Export ("initWithArray:")]
-		IntPtr Constructor (RLMArray array);
-	}
-
 	// typedef void (^RLMObjectMigrationBlock)(RLMObject * _Nullable, RLMObject * _Nullable);
 	delegate void RLMObjectMigrationBlock ([NullAllowed] RLMObject arg0, [NullAllowed] RLMObject arg1);
 
@@ -719,23 +706,6 @@ namespace NxRealm
 		// -(BOOL)isEqualToObjectSchema:(RLMObjectSchema * _Nonnull)objectSchema;
 		[Export ("isEqualToObjectSchema:")]
 		bool IsEqualToObjectSchema (RLMObjectSchema objectSchema);
-	}
-
-	// @interface RLMOptionalBase : NSProxy
-	[BaseType (typeof(NSProxy))]
-	interface RLMOptionalBase
-	{
-		// @property (nonatomic, weak) RLMObjectBase * _Nullable object;
-		[NullAllowed, Export ("object", ArgumentSemantic.Weak)]
-		RLMObjectBase Object { get; set; }
-
-		// @property (nonatomic, unsafe_unretained) RLMProperty * _Nonnull property;
-		[Export ("property", ArgumentSemantic.Assign)]
-		RLMProperty Property { get; set; }
-
-		// @property (nonatomic, strong) id _Nullable underlyingValue;
-		[NullAllowed, Export ("underlyingValue", ArgumentSemantic.Strong)]
-		NSObject UnderlyingValue { get; set; }
 	}
 
 	// @protocol RLMInt

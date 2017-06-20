@@ -2,6 +2,7 @@
 using CoreFoundation;
 using Foundation;
 using ObjCRuntime;
+//using Realm;
 
 namespace NxRealm
 {
@@ -10,19 +11,19 @@ namespace NxRealm
 	[BaseType (typeof(NSError))]
 	interface NSError_RLMSync
 	{
-		// -(void (^ _Nullable)(void))rlmSync_clientResetBlock;
-		[NullAllowed, Export ("rlmSync_clientResetBlock")]
-		Action RlmSync_clientResetBlock ();
+        // -(void (^ _Nullable)(void))rlmSync_clientResetBlock;
+        [NullAllowed, Export("rlmSync_clientResetBlock")]
+        Action RlmSync_clientResetBlock();
 
-		// -(NSString * _Nullable)rlmSync_clientResetBackedUpRealmPath;
-		[NullAllowed, Export ("rlmSync_clientResetBackedUpRealmPath")]
-		string RlmSync_clientResetBackedUpRealmPath ();
+        // -(NSString * _Nullable)rlmSync_clientResetBackedUpRealmPath;
+        [NullAllowed, Export("rlmSync_clientResetBackedUpRealmPath")]
+        string RlmSync_clientResetBackedUpRealmPath();
 	}
 
 	// audit-objc-generics: @interface RLMArray<RLMObjectType : RLMObject *> : NSObject
 	[BaseType (typeof(NSObject))]
 	[DisableDefaultCtor]
-	interface RLMArray
+	interface RLMArray : RLMCollection, NSFastEnumeration
 	{
 		// @property (readonly, assign, nonatomic) NSUInteger count;
 		[Export ("count")]
@@ -46,7 +47,7 @@ namespace NxRealm
 
 		// -(RLMObjectType _Nullable)firstObject;
 		[NullAllowed, Export ("firstObject")]
-		RLMObject FirstObject { get; }
+        RLMObject FirstObject { get; }
 
 		// -(RLMObjectType _Nullable)lastObject;
 		[NullAllowed, Export ("lastObject")]
@@ -58,7 +59,7 @@ namespace NxRealm
 
 		// -(void)addObjects:(id<NSFastEnumeration> _Nonnull)objects;
 		[Export ("addObjects:")]
-		void AddObjects (NSFastEnumeration objects);
+		void AddObjects (INSFastEnumeration objects);
 
 		// -(void)insertObject:(RLMObjectType _Nonnull)anObject atIndex:(NSUInteger)index;
 		[Export ("insertObject:atIndex:")]
@@ -128,11 +129,11 @@ namespace NxRealm
 
 		// -(RLMResults * _Nonnull)sortedResultsUsingDescriptors:(NSArray * _Nonnull)properties;
 		[Export ("sortedResultsUsingDescriptors:")]
-		RLMResults SortedResultsUsingDescriptors (NSObject[] properties);
+        RLMResults SortedResultsUsingDescriptors (RLMSortDescriptor[] properties);
 
 		// -(RLMObjectType _Nonnull)objectAtIndexedSubscript:(NSUInteger)index;
 		[Export ("objectAtIndexedSubscript:")]
-        NSObject ObjectAtIndexedSubscript (nuint index);
+		RLMObject ObjectAtIndexedSubscript (nuint index);
 
 		// -(void)setObject:(RLMObjectType _Nonnull)newValue atIndexedSubscript:(NSUInteger)index;
 		[Export ("setObject:atIndexedSubscript:")]
@@ -140,7 +141,7 @@ namespace NxRealm
 
 		// -(RLMNotificationToken * _Nonnull)addNotificationBlock:(void (^ _Nonnull)(RLMArray<RLMObjectType> * _Nullable, int * _Nullable, NSError * _Nullable))block __attribute__((warn_unused_result));
 		[Export ("addNotificationBlock:")]
-        unsafe RLMNotificationToken AddNotificationBlock (Action<RLMArray, int?, NSError> block);
+        unsafe RLMNotificationToken AddNotificationBlock (Action<NSObject, RLMCollectionChange, NSError> block);
 
 		// -(id _Nullable)minOfProperty:(NSString * _Nonnull)property;
 		[Export ("minOfProperty:")]
@@ -162,16 +163,17 @@ namespace NxRealm
 		NSNumber AverageOfProperty (string property);
 	}
 
-	// @interface Swift (RLMArray)
-	[Category]
-	[BaseType (typeof(RLMArray))]
-	interface RLMArray_Swift
-	{
-		//// -(instancetype _Nonnull)initWithObjectClassName:(NSString * _Nonnull)objectClassName;
-		//[Export ("initWithObjectClassName:")]
-		//IntPtr Constructor (string objectClassName);
-	}
+	//// @interface Swift (RLMArray)
+	//[Category]
+	//[BaseType (typeof(RLMArray))]
+	//interface RLMArray_Swift
+	//{
+	//	// -(instancetype _Nonnull)initWithObjectClassName:(NSString * _Nonnull)objectClassName;
+	//	[Export ("initWithObjectClassName:")]
+	//	IntPtr Constructor (string objectClassName);
+	//}
 
+    partial interface IRLMThreadConfined {}
 	// @protocol RLMThreadConfined <NSObject>
 	[Protocol, Model]
 	[BaseType (typeof(NSObject))]
@@ -196,22 +198,21 @@ namespace NxRealm
 		// +(instancetype _Nonnull)referenceWithThreadConfined:(Confined _Nonnull)threadConfined;
 		[Static]
 		[Export ("referenceWithThreadConfined:")]
-		RLMThreadSafeReference ReferenceWithThreadConfined (RLMThreadConfined threadConfined);
+		RLMThreadSafeReference ReferenceWithThreadConfined (IRLMThreadConfined threadConfined);
 
 		// @property (readonly, getter = isInvalidated, nonatomic) BOOL invalidated;
 		[Export ("invalidated")]
 		bool Invalidated { [Bind ("isInvalidated")] get; }
 	}
 
-	[Protocol, Model]
-	[BaseType(typeof(NSObject))]
-    interface NSFastEnumeration {
-        
-    }
+    partial interface INSFastEnumeration {}
+    [Protocol, Model]
+    interface NSFastEnumeration {}
+
+    partial interface IRLMCollection {}
 
 	// @protocol RLMCollection <NSFastEnumeration, RLMThreadConfined>
 	[Protocol, Model]
-    [BaseType(typeof(NSObject))]
 	interface RLMCollection : NSFastEnumeration, RLMThreadConfined
 	{
 		// @required @property (readonly, assign, nonatomic) NSUInteger count;
@@ -232,17 +233,17 @@ namespace NxRealm
 		// @required -(id _Nonnull)objectAtIndex:(NSUInteger)index;
 		[Abstract]
 		[Export ("objectAtIndex:")]
-		NSObject ObjectAtIndex (nuint index);
+        RLMObject ObjectAtIndex (nuint index);
 
 		// @required -(id _Nullable)firstObject;
 		[Abstract]
 		[NullAllowed, Export ("firstObject")]
-		NSObject FirstObject { get; }
+        RLMObject FirstObject { get; }
 
 		// @required -(id _Nullable)lastObject;
 		[Abstract]
 		[NullAllowed, Export ("lastObject")]
-		NSObject LastObject { get; }
+        RLMObject LastObject { get; }
 
 		// @required -(NSUInteger)indexOfObject:(RLMObject * _Nonnull)object;
 		[Abstract]
@@ -254,7 +255,7 @@ namespace NxRealm
 		[Export ("indexOfObjectWhere:", IsVariadic = true)]
 		nuint IndexOfObjectWhere (string predicateFormat, IntPtr varArgs);
 
-		//// @required -(NSUInteger)indexOfObjectWhere:(NSString * _Nonnull)predicateFormat args:(va_list _Nonnull)args;
+		// @required -(NSUInteger)indexOfObjectWhere:(NSString * _Nonnull)predicateFormat args:(va_list _Nonnull)args;
 		//[Abstract]
 		//[Export ("indexOfObjectWhere:args:")]
 		//unsafe nuint IndexOfObjectWhere (string predicateFormat, sbyte* args);
@@ -297,7 +298,7 @@ namespace NxRealm
 		// @required -(id _Nonnull)objectAtIndexedSubscript:(NSUInteger)index;
 		[Abstract]
 		[Export ("objectAtIndexedSubscript:")]
-		NSObject ObjectAtIndexedSubscript (nuint index);
+        RLMObject ObjectAtIndexedSubscript (nuint index);
 
 		// @required -(id _Nullable)valueForKey:(NSString * _Nonnull)key;
 		[Abstract]
@@ -313,7 +314,7 @@ namespace NxRealm
 		// @required -(RLMNotificationToken * _Nonnull)addNotificationBlock:(void (^ _Nonnull)(id<RLMCollection> _Nullable, RLMCollectionChange * _Nullable, NSError * _Nullable))block __attribute__((warn_unused_result));
 		[Abstract]
 		[Export ("addNotificationBlock:")]
-        RLMNotificationToken AddNotificationBlock (Action<NSObject, int?, NSError> block);
+        RLMNotificationToken AddNotificationBlock (Action<NSObject, RLMCollectionChange, NSError> block);
 
 		// @required -(id _Nullable)minOfProperty:(NSString * _Nonnull)property;
 		[Abstract]
@@ -412,7 +413,7 @@ namespace NxRealm
 	}
 
 	[Static]
-	partial interface RLMConstants
+	partial interface RLMRealmConstants
 	{
 		// extern const RLMNotification _Nonnull RLMRealmRefreshRequiredNotification;
 		[Field ("RLMRealmRefreshRequiredNotification", "__Internal")]
@@ -424,7 +425,7 @@ namespace NxRealm
 
 		// extern const uint64_t RLMNotVersioned;
 		[Field ("RLMNotVersioned", "__Internal")]
-		nuint RLMNotVersioned { get; }
+        nuint RLMNotVersioned { get; }
 
 		// extern NSString *const _Nonnull RLMExceptionName;
 		[Field ("RLMExceptionName", "__Internal")]
@@ -441,19 +442,6 @@ namespace NxRealm
 		// extern NSString *const _Nonnull RLMInvalidatedKey;
 		[Field ("RLMInvalidatedKey", "__Internal")]
 		NSString RLMInvalidatedKey { get; }
-	}
-
-	// @interface RLMListBase : NSObject <NSFastEnumeration>
-	[BaseType (typeof(NSObject))]
-	interface RLMListBase : NSFastEnumeration
-	{
-		// @property (nonatomic, strong) RLMArray * _Nonnull _rlmArray;
-		[Export ("_rlmArray", ArgumentSemantic.Strong)]
-		RLMArray _rlmArray { get; set; }
-
-		// -(instancetype _Nonnull)initWithArray:(RLMArray * _Nonnull)array;
-		[Export ("initWithArray:")]
-		IntPtr Constructor (RLMArray array);
 	}
 
 	// typedef void (^RLMObjectMigrationBlock)(RLMObject * _Nullable, RLMObject * _Nullable);
@@ -526,17 +514,17 @@ namespace NxRealm
 		[Export ("createOrUpdateInRealm:withValue:")]
 		RLMObject CreateOrUpdateInRealm (RLMRealm realm, NSObject value);
 
-		//// @property (readonly, nonatomic) RLMRealm * _Nullable realm;
-		//[NullAllowed, Export ("realm")]
-		//RLMRealm Realm { get; }
+		// @property (readonly, nonatomic) RLMRealm * _Nullable realm;
+		[NullAllowed, Export ("realm")]
+		RLMRealm Realm { get; }
 
 		// @property (readonly, nonatomic) RLMObjectSchema * _Nonnull objectSchema;
 		[Export ("objectSchema")]
 		RLMObjectSchema ObjectSchema { get; }
 
-		//// @property (readonly, getter = isInvalidated, nonatomic) BOOL invalidated;
-		//[Export ("invalidated")]
-		//bool Invalidated { [Bind ("isInvalidated")] get; }
+		// @property (readonly, getter = isInvalidated, nonatomic) BOOL invalidated;
+		[Export ("invalidated")]
+		bool Invalidated { [Bind ("isInvalidated")] get; }
 
 		// +(NSArray<NSString *> * _Nonnull)indexedProperties;
 		[Static]
@@ -566,7 +554,7 @@ namespace NxRealm
 		// +(NSDictionary<NSString *,RLMPropertyDescriptor *> * _Nonnull)linkingObjectsProperties;
 		[Static]
 		[Export ("linkingObjectsProperties")]
-		NSDictionary LinkingObjectsProperties { get; }
+		NSDictionary<NSString, RLMPropertyDescriptor> LinkingObjectsProperties { get; }
 
 		// +(RLMResults * _Nonnull)allObjects;
 		[Static]
@@ -578,10 +566,10 @@ namespace NxRealm
 		[Export ("objectsWhere:", IsVariadic = true)]
 		RLMResults ObjectsWhere (string predicateFormat, IntPtr varArgs);
 
-		// // +(RLMResults * _Nonnull)objectsWhere:(NSString * _Nonnull)predicateFormat args:(va_list _Nonnull)args;
-		// [Static]
-		// [Export ("objectsWhere:args:")]
-		// unsafe RLMResults ObjectsWhere (string predicateFormat, sbyte* args);
+		//// +(RLMResults * _Nonnull)objectsWhere:(NSString * _Nonnull)predicateFormat args:(va_list _Nonnull)args;
+		//[Static]
+		//[Export ("objectsWhere:args:")]
+		//unsafe RLMResults ObjectsWhere (string predicateFormat, sbyte* args);
 
 		// +(RLMResults * _Nonnull)objectsWithPredicate:(NSPredicate * _Nullable)predicate;
 		[Static]
@@ -600,7 +588,7 @@ namespace NxRealm
 		RLMResults AllObjectsInRealm (RLMRealm realm);
 
 		// +(RLMResults * _Nonnull)objectsInRealm:(RLMRealm * _Nonnull)realm where:(NSString * _Nonnull)predicateFormat, ...;
-		[Static, Internal]
+		[Static]
 		[Export ("objectsInRealm:where:", IsVariadic = true)]
 		RLMResults ObjectsInRealm (RLMRealm realm, string predicateFormat, IntPtr varArgs);
 
@@ -671,10 +659,10 @@ namespace NxRealm
 		[Export ("className")]
 		string ClassName { get; }
 
-		// +(BOOL)shouldIncludeInDefaultSchema;
-		[Static]
-		[Export ("shouldIncludeInDefaultSchema")]
-		bool ShouldIncludeInDefaultSchema { get; }
+        // +(BOOL)shouldIncludeInDefaultSchema;
+        [Static]
+        [Export("shouldIncludeInDefaultSchema")]
+        bool ShouldIncludeInDefaultSchema();
 
 		// +(NSString * _Nullable)_realmObjectName;
 		[Static]
@@ -708,55 +696,34 @@ namespace NxRealm
 		bool IsEqualToObjectSchema (RLMObjectSchema objectSchema);
 	}
 
-	// @interface RLMOptionalBase : NSProxy
-    [BaseType (typeof(NSObject))]
-	interface RLMOptionalBase
-	{
-		// @property (nonatomic, weak) RLMObjectBase * _Nullable object;
-		[NullAllowed, Export ("object", ArgumentSemantic.Weak)]
-		RLMObjectBase Object { get; set; }
+	//// @protocol RLMInt
+	//[Protocol, Model]
+	//interface RLMInt
+	//{
+	//}
 
-		// @property (nonatomic, unsafe_unretained) RLMProperty * _Nonnull property;
-		[Export ("property", ArgumentSemantic.Assign)]
-		RLMProperty Property { get; set; }
+	//// @protocol RLMBool
+	//[Protocol, Model]
+	//interface RLMBool
+	//{
+	//}
 
-		// @property (nonatomic, strong) id _Nullable underlyingValue;
-		[NullAllowed, Export ("underlyingValue", ArgumentSemantic.Strong)]
-		NSObject UnderlyingValue { get; set; }
-	}
+	//// @protocol RLMDouble
+	//[Protocol, Model]
+	//interface RLMDouble
+	//{
+	//}
 
-	// @protocol RLMInt
-	[Protocol, Model]
-	[BaseType(typeof(NSObject))]
-	interface RLMInt
-	{
-	}
-
-	// @protocol RLMBool
-	[Protocol, Model]
-    [BaseType(typeof(NSObject))]
-	interface RLMBool
-	{
-	}
-
-	// @protocol RLMDouble
-	[Protocol, Model]
-	[BaseType(typeof(NSObject))]
-	interface RLMDouble
-	{
-	}
-
-	// @protocol RLMFloat
-	[Protocol, Model]
-	[BaseType(typeof(NSObject))]
-	interface RLMFloat
-	{
-	}
+	//// @protocol RLMFloat
+	//[Protocol, Model]
+	//interface RLMFloat
+	//{
+	//}
 
 	//// @interface  (NSNumber) <RLMInt, RLMBool, RLMDouble, RLMFloat>
 	//[Category]
 	//[BaseType (typeof(NSNumber))]
-	//interface NSNumber_ : RLMInt, RLMBool, RLMDouble, RLMFloat
+	//interface NSNumber_ : IRLMInt, IRLMBool, IRLMDouble, IRLMFloat
 	//{
 	//}
 
@@ -795,7 +762,7 @@ namespace NxRealm
 
 	// @interface RLMPropertyDescriptor : NSObject
 	[BaseType (typeof(NSObject))]
-	interface RLMPropertyDescriptor
+    interface RLMPropertyDescriptor : INativeObject
 	{
 		// +(instancetype _Nonnull)descriptorWithClass:(Class _Nonnull)objectClass propertyName:(NSString * _Nonnull)propertyName;
 		[Static]
@@ -888,9 +855,9 @@ namespace NxRealm
 		[Export ("transactionWithBlock:error:")]
 		bool TransactionWithBlock (Action block, [NullAllowed] out NSError error);
 
-		// -(BOOL)refresh;
-		[Export ("refresh")]
-		bool Refresh();
+        // -(BOOL)refresh;
+        [Export("refresh")]
+        bool Refresh();
 
 		// @property (nonatomic) BOOL autorefresh;
 		[Export ("autorefresh")]
@@ -915,7 +882,7 @@ namespace NxRealm
 
 		// -(void)addObjects:(id<NSFastEnumeration> _Nonnull)array;
 		[Export ("addObjects:")]
-		void AddObjects (NSFastEnumeration array);
+		void AddObjects (INSFastEnumeration array);
 
 		// -(void)addOrUpdateObject:(RLMObject * _Nonnull)object;
 		[Export ("addOrUpdateObject:")]
@@ -984,26 +951,24 @@ namespace NxRealm
 		[Field ("RLMSyncErrorDomain", "__Internal")]
 		NSString RLMSyncErrorDomain { get; }
 
-		// extern NSString *const _Nonnull RLMSyncAuthErrorDomain;
-		[Field ("RLMSyncAuthErrorDomain", "__Internal")]
-		NSString RLMSyncAuthErrorDomain { get; }
+		//// extern NSString *const _Nonnull RLMSyncAuthErrorDomain;
+		//[Field ("RLMSyncAuthErrorDomain", "__Internal")]
+		//NSString RLMSyncAuthErrorDomain { get; }
 
-		// extern NSString *const _Nonnull RLMSyncPermissionErrorDomain;
-		[Field ("RLMSyncPermissionErrorDomain", "__Internal")]
-		NSString RLMSyncPermissionErrorDomain { get; }
+		//// extern NSString *const _Nonnull RLMSyncPermissionErrorDomain;
+		//[Field ("RLMSyncPermissionErrorDomain", "__Internal")]
+		//NSString RLMSyncPermissionErrorDomain { get; }
 	}
 
-	// @interface Sync (RLMRealmConfiguration)
-	[Category]
-	[BaseType (typeof(RLMRealmConfiguration))]
-	interface RLMRealmConfiguration_Sync
-	{
-        // @property (nonatomic) RLMSyncConfiguration * _Nullable syncConfiguration;
-        [NullAllowed, Export("syncConfiguration", ArgumentSemantic.Assign)]
-		RLMSyncConfiguration GetSyncConfiguration();
-		[NullAllowed, Export("setSyncConfiguration:", ArgumentSemantic.Assign)]
-		void GetSyncConfiguration(RLMSyncConfiguration config);
-	}
+	//// @interface Sync (RLMRealmConfiguration)
+	//[Category]
+	//[BaseType (typeof(RLMRealmConfiguration))]
+	//interface RLMRealmConfiguration_Sync
+	//{
+	//	// @property (nonatomic) RLMSyncConfiguration * _Nullable syncConfiguration;
+	//	[NullAllowed, Export ("syncConfiguration", ArgumentSemantic.Assign)]
+	//	RLMSyncConfiguration SyncConfiguration { }
+	//}
 
 	// typedef BOOL (^RLMShouldCompactOnLaunchBlock)(NSUInteger, NSUInteger);
 	delegate bool RLMShouldCompactOnLaunchBlock (nuint arg0, nuint arg1);
@@ -1069,7 +1034,7 @@ namespace NxRealm
 		RLMResults AllObjects (string className);
 
 		// -(RLMResults * _Nonnull)objects:(NSString * _Nonnull)className where:(NSString * _Nonnull)predicateFormat, ...;
-		[Internal]
+		//[Internal]
 		[Export ("objects:where:", IsVariadic = true)]
 		RLMResults Objects (string className, string predicateFormat, IntPtr varArgs);
 
@@ -1110,15 +1075,15 @@ namespace NxRealm
 
 		// -(RLMObjectType _Nonnull)objectAtIndex:(NSUInteger)index;
 		[Export ("objectAtIndex:")]
-        NSObject ObjectAtIndex (nuint index);
+        RLMObject ObjectAtIndex (nuint index);
 
 		// -(RLMObjectType _Nullable)firstObject;
 		[NullAllowed, Export ("firstObject")]
-        NSObject FirstObject { get; }
+		RLMObject FirstObject { get; }
 
 		// -(RLMObjectType _Nullable)lastObject;
 		[NullAllowed, Export ("lastObject")]
-        NSObject LastObject { get; }
+		RLMObject LastObject { get; }
 
 		// -(NSUInteger)indexOfObject:(RLMObjectType _Nonnull)object;
 		[Export ("indexOfObject:")]
@@ -1164,7 +1129,7 @@ namespace NxRealm
 
 		// -(RLMNotificationToken * _Nonnull)addNotificationBlock:(void (^ _Nonnull)(RLMResults<RLMObjectType> * _Nullable, RLMCollectionChange * _Nullable, NSError * _Nullable))block __attribute__((warn_unused_result));
 		[Export ("addNotificationBlock:")]
-        RLMNotificationToken AddNotificationBlock (Action<NSObject, int?, NSError> block);
+        RLMNotificationToken AddNotificationBlock (Action<NSObject, RLMCollectionChange, NSError> block);
 
 		// -(id _Nullable)minOfProperty:(NSString * _Nonnull)property;
 		[Export ("minOfProperty:")]
@@ -1187,7 +1152,7 @@ namespace NxRealm
 
 		// -(RLMObjectType _Nonnull)objectAtIndexedSubscript:(NSUInteger)index;
 		[Export ("objectAtIndexedSubscript:")]
-        NSObject ObjectAtIndexedSubscript (nuint index);
+		RLMObject ObjectAtIndexedSubscript (nuint index);
 	}
 
 	// audit-objc-generics: @interface RLMLinkingObjects<RLMObjectType : RLMObject *> : RLMResults
@@ -1231,13 +1196,17 @@ namespace NxRealm
 		[Export ("realmURL")]
 		NSUrl RealmURL { get; }
 
+		// @property (nonatomic) BOOL enableSSLValidation;
+		[Export ("enableSSLValidation")]
+		bool EnableSSLValidation { get; set; }
+
 		// -(instancetype _Nonnull)initWithUser:(RLMSyncUser * _Nonnull)user realmURL:(NSURL * _Nonnull)url;
 		[Export ("initWithUser:realmURL:")]
 		IntPtr Constructor (RLMSyncUser user, NSUrl url);
 	}
 
 	[Static]
-	partial interface RLMIdentityConstants
+	partial interface RLMIdentityProviderDConstants
 	{
 		// extern const RLMIdentityProvider _Nonnull RLMIdentityProviderDebug;
 		[Field ("RLMIdentityProviderDebug", "__Internal")]
@@ -1324,7 +1293,7 @@ namespace NxRealm
 		[Export ("appID")]
 		string AppID { get; set; }
 
-		// @property (nonatomic) BOOL disableSSLValidation
+		// @property (nonatomic) BOOL disableSSLValidation __attribute__((deprecated("Set `enableSSLValidation` on individual configurations instead.")));
 		[Export ("disableSSLValidation")]
 		bool DisableSSLValidation { get; set; }
 
@@ -1385,7 +1354,7 @@ namespace NxRealm
 
 		// @property (readonly) NSNumber<RLMInt> * _Nullable statusCode;
 		[NullAllowed, Export ("statusCode")]
-		NSNumber StatusCode { get; }
+        NSNumber StatusCode { get; }
 
 		// @property (readonly) NSString * _Nullable statusMessage;
 		[NullAllowed, Export ("statusMessage")]
@@ -1405,7 +1374,7 @@ namespace NxRealm
 
 		// @property (readonly) NSNumber<RLMBool> * _Nullable mayRead;
 		[NullAllowed, Export ("mayRead")]
-		NSNumber MayRead { get; }
+        NSNumber MayRead { get; }
 
 		// @property (readonly) NSNumber<RLMBool> * _Nullable mayWrite;
 		[NullAllowed, Export ("mayWrite")]
@@ -1418,7 +1387,7 @@ namespace NxRealm
 		// +(instancetype _Nonnull)permissionChangeWithRealmURL:(NSString * _Nonnull)realmURL userID:(NSString * _Nonnull)userID read:(NSNumber<RLMBool> * _Nullable)mayRead write:(NSNumber<RLMBool> * _Nullable)mayWrite manage:(NSNumber<RLMBool> * _Nullable)mayManage;
 		[Static]
 		[Export ("permissionChangeWithRealmURL:userID:read:write:manage:")]
-		RLMSyncPermissionChange PermissionChangeWithRealmURL (string realmURL, string userID, [NullAllowed] NSNumber mayRead, [NullAllowed] NSNumber mayWrite, [NullAllowed] NSNumber mayManage);
+        RLMSyncPermissionChange PermissionChangeWithRealmURL (string realmURL, string userID, [NullAllowed]NSNumber mayRead, [NullAllowed] NSNumber mayWrite, [NullAllowed] NSNumber mayManage);
 	}
 
 	// @interface RLMSyncPermissionOffer : RLMObject
@@ -1524,15 +1493,24 @@ namespace NxRealm
 	// typedef void (^RLMUserCompletionBlock)(RLMSyncUser * _Nullable, NSError * _Nullable);
 	delegate void RLMUserCompletionBlock ([NullAllowed] RLMSyncUser arg0, [NullAllowed] NSError arg1);
 
+	//// typedef void (^RLMPasswordChangeStatusBlock)(NSError * _Nullable);
+	//delegate void RLMPasswordChangeStatusBlock ([NullAllowed] NSError arg0);
+
+	//// typedef void (^RLMPermissionStatusBlock)(NSError * _Nullable);
+	//delegate void RLMPermissionStatusBlock ([NullAllowed] NSError arg0);
+
+	//// typedef void (^RLMPermissionResultsBlock)(RLMSyncPermissionResults * _Nullable, NSError * _Nullable);
+	//delegate void RLMPermissionResultsBlock ([NullAllowed] RLMSyncPermissionResults arg0, [NullAllowed] NSError arg1);
+
 	// @interface RLMSyncUser : NSObject
 	[BaseType (typeof(NSObject))]
 	[DisableDefaultCtor]
-	interface RLMSyncUser
+    interface RLMSyncUser : INativeObject
 	{
 		// +(NSDictionary<NSString *,RLMSyncUser *> * _Nonnull)allUsers;
 		[Static]
 		[Export ("allUsers")]
-		NSDictionary AllUsers { get; }
+		NSDictionary<NSString, RLMSyncUser> AllUsers { get; }
 
 		// +(RLMSyncUser * _Nullable)currentUser;
 		[Static]
@@ -1578,6 +1556,26 @@ namespace NxRealm
 		[Export ("allSessions")]
 		RLMSyncSession[] AllSessions { get; }
 
+		//// -(void)changePassword:(NSString * _Nonnull)newPassword completion:(RLMPasswordChangeStatusBlock _Nonnull)completion;
+		//[Export ("changePassword:completion:")]
+		//void ChangePassword (string newPassword, RLMPasswordChangeStatusBlock completion);
+
+		//// -(void)changePassword:(NSString * _Nonnull)newPassword forUserID:(NSString * _Nonnull)userID completion:(RLMPasswordChangeStatusBlock _Nonnull)completion;
+		//[Export ("changePassword:forUserID:completion:")]
+		//void ChangePassword (string newPassword, string userID, RLMPasswordChangeStatusBlock completion);
+
+		//// -(void)retrievePermissionsWithCallback:(RLMPermissionResultsBlock _Nonnull)callback;
+		//[Export ("retrievePermissionsWithCallback:")]
+		//void RetrievePermissionsWithCallback (RLMPermissionResultsBlock callback);
+
+		//// -(void)applyPermission:(RLMSyncPermissionValue * _Nonnull)permission callback:(RLMPermissionStatusBlock _Nonnull)callback;
+		//[Export ("applyPermission:callback:")]
+		//void ApplyPermission (RLMSyncPermissionValue permission, RLMPermissionStatusBlock callback);
+
+		//// -(void)revokePermission:(RLMSyncPermissionValue * _Nonnull)permission callback:(RLMPermissionStatusBlock _Nonnull)callback;
+		//[Export ("revokePermission:callback:")]
+		//void RevokePermission (RLMSyncPermissionValue permission, RLMPermissionStatusBlock callback);
+
 		// -(RLMRealm * _Nonnull)managementRealmWithError:(NSError * _Nullable * _Nullable)error;
 		[Export ("managementRealmWithError:")]
 		RLMRealm ManagementRealmWithError ([NullAllowed] out NSError error);
@@ -1586,6 +1584,82 @@ namespace NxRealm
 		[Export ("permissionRealmWithError:")]
 		RLMRealm PermissionRealmWithError ([NullAllowed] out NSError error);
 	}
+
+	//// @interface RLMSyncPermissionResults : NSObject <NSFastEnumeration>
+	//[BaseType (typeof(NSObject))]
+	//[DisableDefaultCtor]
+	//interface RLMSyncPermissionResults : NSFastEnumeration
+	//{
+	//	// @property (readonly, nonatomic) NSInteger count;
+	//	[Export ("count")]
+	//	nint Count { get; }
+
+	//	// -(RLMSyncPermissionValue * _Nullable)firstObject;
+	//	[NullAllowed, Export ("firstObject")]
+	//	RLMSyncPermissionValue FirstObject { get; }
+
+	//	// -(RLMSyncPermissionValue * _Nullable)lastObject;
+	//	[NullAllowed, Export ("lastObject")]
+	//	RLMSyncPermissionValue LastObject { get; }
+
+	//	// -(RLMSyncPermissionValue * _Nonnull)objectAtIndex:(NSInteger)index;
+	//	[Export ("objectAtIndex:")]
+	//	RLMSyncPermissionValue ObjectAtIndex (nint index);
+
+	//	// -(NSInteger)indexOfObject:(RLMSyncPermissionValue * _Nonnull)object;
+	//	[Export ("indexOfObject:")]
+	//	nint IndexOfObject (RLMSyncPermissionValue @object);
+
+	//	// -(RLMNotificationToken * _Nonnull)addNotificationBlock:(RLMPermissionStatusBlock _Nonnull)block;
+	//	[Export ("addNotificationBlock:")]
+	//	RLMNotificationToken AddNotificationBlock (RLMPermissionStatusBlock block);
+
+	//	// -(RLMSyncPermissionResults * _Nonnull)objectsWithPredicate:(NSPredicate * _Nonnull)predicate;
+	//	[Export ("objectsWithPredicate:")]
+	//	RLMSyncPermissionResults ObjectsWithPredicate (NSPredicate predicate);
+
+	//	// -(RLMSyncPermissionResults * _Nonnull)sortedResultsUsingProperty:(RLMSyncPermissionResultsSortProperty)property ascending:(BOOL)ascending;
+	//	[Export ("sortedResultsUsingProperty:ascending:")]
+	//	RLMSyncPermissionResults SortedResultsUsingProperty (RLMSyncPermissionResultsSortProperty property, bool ascending);
+	//}
+
+	//// @interface RLMSyncPermissionValue : NSObject
+	//[BaseType (typeof(NSObject))]
+	//[DisableDefaultCtor]
+	//interface RLMSyncPermissionValue
+	//{
+	//	// @property (readonly, nonatomic) NSString * _Nonnull path;
+	//	[Export ("path")]
+	//	string Path { get; }
+
+	//	// @property (readonly, nonatomic) RLMSyncAccessLevel accessLevel;
+	//	[Export ("accessLevel")]
+	//	RLMSyncAccessLevel AccessLevel { get; }
+
+	//	// @property (readonly, nonatomic) BOOL mayRead;
+	//	[Export ("mayRead")]
+	//	bool MayRead { get; }
+
+	//	// @property (readonly, nonatomic) BOOL mayWrite;
+	//	[Export ("mayWrite")]
+	//	bool MayWrite { get; }
+
+	//	// @property (readonly, nonatomic) BOOL mayManage;
+	//	[Export ("mayManage")]
+	//	bool MayManage { get; }
+
+	//	// -(instancetype _Nonnull)initWithRealmPath:(NSString * _Nonnull)path userID:(NSString * _Nonnull)userID accessLevel:(RLMSyncAccessLevel)accessLevel;
+	//	[Export ("initWithRealmPath:userID:accessLevel:")]
+	//	IntPtr Constructor (string path, string userID, RLMSyncAccessLevel accessLevel);
+
+	//	// @property (readonly, nonatomic) NSString * _Nullable userId;
+	//	[NullAllowed, Export ("userId")]
+	//	string UserId { get; }
+
+	//	// @property (readonly, nonatomic) NSDate * _Nonnull updatedAt;
+	//	[Export ("updatedAt")]
+	//	NSDate UpdatedAt { get; }
+	//}
 
 	// typedef void (^RLMProgressNotificationBlock)(NSUInteger, NSUInteger);
 	delegate void RLMProgressNotificationBlock (nuint arg0, nuint arg1);

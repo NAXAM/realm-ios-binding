@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-using Foundation;
 using ObjCRuntime;
 
 namespace NxRealm
 {
-	public enum RLMPropertyType : long
+	public enum RLMPropertyType
 	{
 		Int = 0,
 		Bool = 1,
@@ -34,38 +32,10 @@ namespace NxRealm
 		SchemaMismatch = 10
 	}
 
-	// static class CFunctions
-	// {
-	// 	// extern RLMRealm * _Nullable RLMObjectBaseRealm (RLMObjectBase * _Nullable object);
-	// 	[DllImport ("__Internal")]
-	// 	[Verify (PlatformInvoke)]
-	// 	[return: NullAllowed]
-	// 	static extern RLMRealm RLMObjectBaseRealm ([NullAllowed] RLMObjectBase @object);
-
-	// 	// extern RLMObjectSchema * _Nullable RLMObjectBaseObjectSchema (RLMObjectBase * _Nullable object);
-	// 	[DllImport ("__Internal")]
-	// 	[Verify (PlatformInvoke)]
-	// 	[return: NullAllowed]
-	// 	static extern RLMObjectSchema RLMObjectBaseObjectSchema ([NullAllowed] RLMObjectBase @object);
-
-	// 	// extern id _Nullable RLMObjectBaseObjectForKeyedSubscript (RLMObjectBase * _Nullable object, NSString * _Nonnull key);
-	// 	[DllImport ("__Internal")]
-	// 	[Verify (PlatformInvoke)]
-	// 	[return: NullAllowed]
-	// 	static extern NSObject RLMObjectBaseObjectForKeyedSubscript ([NullAllowed] RLMObjectBase @object, NSString key);
-
-	// 	// extern void RLMObjectBaseSetObjectForKeyedSubscript (RLMObjectBase * _Nullable object, NSString * _Nonnull key, id _Nullable obj);
-	// 	[DllImport ("__Internal")]
-	// 	[Verify (PlatformInvoke)]
-	// 	static extern void RLMObjectBaseSetObjectForKeyedSubscript ([NullAllowed] RLMObjectBase @object, NSString key, [NullAllowed] NSObject obj);
-	// }
-
 	[Native]
 	public enum RLMSyncError : long
 	{
 		BadResponse = 1,
-        BadRemoteRealmPath      = 2,
-        HTTPStatusCodeError     = 3,
 		ClientSessionError = 4,
 		ClientUserError = 5,
 		ClientInternalError = 6,
@@ -76,9 +46,20 @@ namespace NxRealm
 	[Native]
 	public enum RLMSyncAuthError : long
 	{
+		BadResponse = 1,
+		BadRemoteRealmPath = 2,
+		HTTPStatusCodeError = 3,
+		ClientSessionError = 4,
 		InvalidCredential = 611,
 		UserDoesNotExist = 612,
 		UserAlreadyExists = 613
+	}
+
+	[Native]
+	public enum RLMSyncPermissionError : long
+	{
+		ChangeFailed = 1,
+		GetFailed = 2
 	}
 
 	[Native]
@@ -148,5 +129,24 @@ namespace NxRealm
 	{
 		ReportIndefinitely,
 		ForCurrentlyOutstandingWork
+	}
+
+	[Native]
+	public enum RLMSyncStopPolicy : ulong
+	{
+		Immediately,
+		LiveIndefinitely,
+		AfterChangesUploaded
+	}
+
+	[Native]
+	public enum RLMSyncSystemErrorKind : ulong
+	{
+		ClientReset,
+		Client,
+		Connection,
+		Session,
+		User,
+		Unknown
 	}
 }
